@@ -8,13 +8,11 @@ class GrammarAnalyzer:
     def FirstFollow(self):
         return 0
     
-    #文法分析表函数,构造表后直接打印出来或新建一个Listresult.xlsx文件，然后将表存到文件中
+    #文法分析表函数,构造表后直接打印出来
     def AnalyzeTable(self):
-        #file1 = open("listresult.xlsx",'w')
-        #file1.write(list)
         return 0
 
-    #符号栈函数,文法的存储数组是self.grammar,构造表后直接打印出来或新建一个Stackresult.xlsx文件，然后将表存到文件中
+    #符号栈函数,文法的存储数组是self.grammar,构造表后直接打印出来
     #比如 self.grammar = ['E->TG', 'G->+TG|-TG', 'T->FS', 'S->*FS', 'S->/FS','F->(E)', 'F->i']
     def SymbolStack(self):
         return 0
@@ -29,8 +27,8 @@ class GrammarAnalyzer:
     
     def run(self):
         self.grammar = [] #存放文法的数组
-        self.first = [] #存放first集， eg:{"first":"first(E)", "content":"a,("}
-        self.follow = [] #存放follow集 eg:{"follow":"follow(E)", "content":"a,("}
+        self.first = [] #存放first集， eg:{"first":"E", "content":['a','(']}
+        self.follow = [] #存放follow集 eg:{"follow":"E", "content":['a','(']}
         with open(self.inputfile, "r", encoding="utf-8") as f:
             for line in f.readlines():
                 word = line.replace(" ","").replace("\n","")
@@ -43,6 +41,7 @@ class GrammarAnalyzer:
         self.AnalyzeTable()
 
         #求符号栈
+        symbol = input("输入一个字符串：")
         self.SymbolStack()
 
 
