@@ -27,8 +27,86 @@ class GrammarAnalyzer:
     
     def run(self):
         self.grammar = [] #存放文法的数组
-        self.first = [] #存放first集， eg:{"first":"E", "content":['a','(']}
+        self.first = [] 
+        '''存放first集， eg:{"first":"E", "content":[
+            ['a','('],]}'''
         self.follow = [] #存放follow集 eg:{"follow":"E", "content":['a','(']}
+        '''
+        原产生式
+        E -> + T
+        T -> a G
+        G -> b
+        处理后产生式
+        #print(grammer[0]['left'], '->')
+        #for i in grammer[0]['right']:
+        #   print(i['name'], ' ')
+        grammer =
+        [
+            {
+                'left' : 'E', 
+                'right' : [
+                    {
+                        'name' : '+', 
+                        'TYPE' : 'END'
+                    }, 
+                    {
+                        'name' : 'T', 
+                        'TYPE' : 'UNEND'
+                    }
+                ]
+            },
+            {
+                'left' : 'T', 
+                'right' : [
+                    {
+                        'name' : 'a', 
+                        'TYPE' : 'END'
+                    }, 
+                    {
+                        'name' : 'G', 
+                        'TYPE' : 'UNEND'
+                    }
+                ]
+            },
+            {
+                'left' : 'G', 
+                'right' : [
+                    {
+                        'name' : 'b', 
+                        'TYPE' : 'END'
+                    }
+                ]
+            }
+        ]
+        first集
+        [
+            {
+                'first':'E',
+                'content':[
+                    {
+                        'name':'a',
+                        'position':0
+                    },
+                    {
+                        'name':'b',
+                        'position':1
+                    },
+                    ......
+                ]
+            }, 
+            {},
+            ......
+        ]
+        follow集类似
+        分析表
+        analyze = [
+            [null, 'a', 'b', 'c', ..., '#'],
+            ['A',处理后产生式() , , , , , , , , , , , , ],
+            ['B', , , , , , , , , , , , , ],
+            .......
+
+        ]
+        '''
         with open(self.inputfile, "r", encoding="utf-8") as f:
             for line in f.readlines():
                 word = line.replace(" ","").replace("\n","")

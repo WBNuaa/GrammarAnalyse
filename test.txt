@@ -1,7 +1,11 @@
-E->  T  G 
-G  -  >  + T  G  | -TG
-T->FS
-    S   -  > *FS
-S->/FS
-F->(E)
-F->i
+E -> T G
+//[{"name":"T", "TYPE":"UNEND"},{"name":"G", "TYPE":"END"}] 
+G -> + T G | - T G
+//G -> + T G
+//G -> id
+//G -> - T G
+T ->F S
+    S   -> * F S
+S -> / F S
+F -> ( E )
+F -> i
