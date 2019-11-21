@@ -1,7 +1,8 @@
-E->  T  G 
-G  -  >  + T  G  | -TG
-T->FS
-    S   -  > *FS
-S->/FS
-F->(E)
-F->i
+E G T S F
++ - / ( ) i
+E -> T G
+G -> + T G | - T G
+T -> F S
+S -> / F S
+F -> ( E )
+F -> i
