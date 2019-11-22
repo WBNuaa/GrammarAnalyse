@@ -3,6 +3,7 @@ E G T S F
 E -> T G
 G -> + T G | - T G
 T -> F S
+T -> epsilon
 S -> / F S
 F -> ( E )
 F -> i
