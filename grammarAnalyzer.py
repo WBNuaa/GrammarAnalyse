@@ -6,7 +6,115 @@ class GrammarAnalyzer:
 
     #first集follow集函数，文法的存储数组是self.grammar,得到的结果打印出来并存到数组self.first,self.follow
     #比如self.grammar = [{'Left': 'E', 'Right': [{'name': 'T', 'TYPE': 'UNEND'}, {'name': 'G', 'TYPE': 'UNEND'}]}]
+    
+    '''
+    self.first = {
+        'E':[
+            {
+                'type':'UNEND',
+                'name':'T',
+                'position':0,
+                'index':0
+            }
+        ],
+        'F':[
+            {
+                'name':'(',
+                'position':3
+            }, {
+                'name':'i',
+                'position':5
+            }
+        ]
+    }
+    '''
+
     def FirstFollow(self):
+        ###############
+        # first 集
+        ###############
+        finished = True
+        for grammar in self.grammar:
+            print(grammar)
+
+            left = grammar['Left']
+            if left not in self.first:
+                self.first[left] = [] # 需要往列表里添加一个字典
+
+            right = grammar['Right'][0] # 只需要看右边第一个符号
+            if right['TYPE'] == 'END': # 如果是终结符
+                tmp_dict = {}
+                tmp_dict['name'] = right['name']
+                tmp_dict['position'] = self.grammar.index(grammar)
+                self.first[left].append(tmp_dict)
+            elif right['TYPE'] == 'UNEND': # 如果是非终结符
+                finished = False
+                tmp_dict = {}
+                tmp_dict['type'] = 'UNEND'
+                tmp_dict['name'] = right['name']
+                tmp_dict['position'] = self.grammar.index(grammar)
+                tmp_dict['index'] = 0
+                self.first[left].append(tmp_dict)
+        
+        while finished == False:
+            finished = True
+            for unend_symbol in self.first:
+                for element in self.first[unend_symbol]: # 这里拿到的是一个字典                    
+                    if element.get('type') == 'UNEND':
+                        finished = False
+                        replace_symbol = element['name']
+                        position = element['position']
+                        index = element['index']
+                        replace_list = self.first[replace_symbol]
+                        
+                        # 先把现在列表里的那个字典删掉
+                        del self.first[unend_symbol][self.first[unend_symbol].index(element)]
+                        
+                        # 然后把要替换列表的所有字典都加到现在的列表里
+                        for replace_dict in replace_list:
+                            if replace_dict.get('type') == 'UNEND':
+                                # 如果还是非终结符
+                                tmp_dict = replace_dict.copy()
+                                tmp_dict['position'] = position
+                                tmp_dict['index'] = index
+                                self.first[unend_symbol].append(tmp_dict)
+                            else:
+                                # 终结符
+                                if replace_dict['name'] == 'epsilon':
+                                    # 如果是空字符，需要到 grammar 里面去找
+                                    for grammar in self.grammar:
+                                        if grammar['Left'] == unend_symbol:
+                                            right = grammar['Right'][index + 1]
+                                            break
+                                    if right['TYPE'] == 'END': # 如果是终结符
+                                        tmp_dict = {}
+                                        tmp_dict['name'] = right['name']
+                                        tmp_dict['position'] = position
+                                        self.first[unend_symbol].append(tmp_dict)
+                                    elif right['TYPE'] == 'UNEND': # 如果是非终结符
+                                        # finished = False
+                                        tmp_dict = {}
+                                        tmp_dict['type'] = 'UNEND'
+                                        tmp_dict['name'] = right['name']
+                                        tmp_dict['position'] = position
+                                        tmp_dict['index'] = index + 1
+                                        self.first[unend_symbol].append(tmp_dict)
+                                else:
+                                    tmp_dict = replace_dict.copy()
+                                    tmp_dict['position'] = position
+                                    self.first[unend_symbol].append(tmp_dict)
+                    else:
+                        continue
+
+        print("目前得到的 first 集：")
+        for unend_symbol in self.first:
+            print(unend_symbol, '——', self.first[unend_symbol])
+
+        ###############
+        # follow 集
+        ###############
+
+
         return 0
     
     #文法分析表函数,构造表后直接打印出来,
@@ -30,8 +138,8 @@ class GrammarAnalyzer:
         self.Vg = [] #非终结符
         self.Vt = [] #终结符
         self.grammar = [] #存放文法的数组
-        self.first = [] #存放first集， eg:{"first":"E", "content":['a','(']}
-        self.follow = [] #存放follow集 eg:{"follow":"E", "content":['a','(']}
+        self.first = {} #存放first集， eg:{"first":"E", "content":['a','(']}
+        self.follow = {} #存放follow集 eg:{"follow":"E", "content":['a','(']}
         self.analyse = [[]] 
         '''
         self.analyse = [
