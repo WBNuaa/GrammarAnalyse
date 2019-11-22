@@ -47,24 +47,26 @@
             }
         ]
         first集
-        [
-            {
-                'first':'E',
-                'content':[
-                    {
-                        'name':'a',
-                        'position':0
-                    },
-                    {
-                        'name':'b',
-                        'position':1
-                    },
-                    ......
-                ]
-            }, 
-            {},
-            ......
-        ]
+        {
+            'E': [
+                {
+                    'name':'a', 
+                    'position':0
+                }, {
+                    'name':'b', 
+                    'position':1
+                }
+            ],
+            'T': [
+                {
+                    'name':'c', 
+                    'position':2
+                }, {
+                    'name':'d', 
+                    'position':3
+                }
+            ],
+        }
         follow集类似
         分析表
         analyze = [
