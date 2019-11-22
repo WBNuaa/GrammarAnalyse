@@ -1,5 +1,5 @@
 E G T S F
-+ - / ( ) i
++ - / ( ) i epsilon
 E -> T G
 G -> + T G | - T G
 T -> F S
