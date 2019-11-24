@@ -40,11 +40,6 @@ class GrammarAnalyzer:
             for unend_symbol in self.first: # 遍历 first 集里的每一个集合
                 for element in self.first[unend_symbol]: # 遍历每一个集合里的每一个元素
                     if element.get('type') == 'FIRST': # 若该元素需要展开，如：FIRST(X)
-                        ##################
-                        # 感觉这里有问题
-                        ##################
-                        finished = False
-
                         replace_symbol = element['name'] # 拿到 X
                         position = element['position']
                         index = element['index']
@@ -57,45 +52,33 @@ class GrammarAnalyzer:
                         # 把当前 FIRST(X) 集合中的所有元素都加到当前集合中来
                         for replace_dict in replace_list: # replace_dict 为当前 FIRST(X) 中的元素
                             if replace_dict.get('type') == 'FIRST': # 若 replace_dict 仍需要展开，则原样复制过去即可
-                                #########################
-                                # 感觉要在这里加 finished
-                                #########################
+                                finished = False
                                 tmp_dict = replace_dict.copy()
                                 tmp_dict['position'] = position # position 保留
                                 tmp_dict['index'] = index # index 保留
-                                self.first[unend_symbol].append(tmp_dict)
+                                if tmp_dict not in self.first[unend_symbol]:
+                                    self.first[unend_symbol].append(tmp_dict)
                             else: # 终结符
                                 if replace_dict['name'] == 'epsilon': # 如果是空字符，还需要对 X 的下一个字符进行判断
-                                    for grammar in self.grammar:
-                                        if grammar['Left'] == unend_symbol:
-                                            right_list = grammar['Right']
-                                            break
-                                    if index + 1 > len(right_list) - 1:
-                                        # 保留空字符
-                                        tmp_dict = {}
+                                    right_list = self.grammar[position]['Right'] # 拿到 X 所在产生式右边的列表
+                                    tmp_dict = {}
+                                    if index + 1 > len(right_list) - 1: # 若 X 已是最后一个符号，则保留空字符
                                         tmp_dict['name'] = 'epsilon'
-                                        tmp_dict['position'] = position
-                                        self.first[unend_symbol].append(tmp_dict)
-                                    else:
-                                        # 继续求 first 集
+                                    else: # 若 X 后面还有符号，则应加入下一个符号的 first 集
                                         right = grammar['Right'][index + 1]
-                                        if right['TYPE'] == 'END': # 如果是终结符
-                                            tmp_dict = {}
-                                            tmp_dict['name'] = right['name']
-                                            tmp_dict['position'] = position
-                                            self.first[unend_symbol].append(tmp_dict)
-                                        elif right['TYPE'] == 'UNEND': # 如果是非终结符
-                                            # finished = False
-                                            tmp_dict = {}
+                                        if right['TYPE'] == 'UNEND': # 如果下一个符号是非终结符
+                                            finished = False
                                             tmp_dict['type'] = 'FIRST'
-                                            tmp_dict['name'] = right['name']
-                                            tmp_dict['position'] = position
                                             tmp_dict['index'] = index + 1
-                                            self.first[unend_symbol].append(tmp_dict)
+                                        tmp_dict['name'] = right['name']
+                                    tmp_dict['position'] = position
+                                    if tmp_dict not in self.first[unend_symbol]:
+                                        self.first[unend_symbol].append(tmp_dict)
                                 else: # 普通终结符，原样复制过去即可
                                     tmp_dict = replace_dict.copy()
                                     tmp_dict['position'] = position
-                                    self.first[unend_symbol].append(tmp_dict)
+                                    if tmp_dict not in self.first[unend_symbol]:
+                                        self.first[unend_symbol].append(tmp_dict)
                     else:
                         continue
 
@@ -108,22 +91,25 @@ class GrammarAnalyzer:
         ###############
         # follow 集
         ###############
+        # first 集里有多少个集合 follow 集里面就有多少个集合
         for unend_symbol in self.first:
             self.follow[unend_symbol] = []
 
+        # 给起始符号加上'#'
         tmp_dict = {}
         tmp_dict['name'] = '#'
         tmp_dict['position'] = 0
         self.follow[self.grammar[0]['Left']].append(tmp_dict)
 
+        # 初始化 follow 集
         finished = True
-        for unend_symbol in self.follow:
-            for grammar in self.grammar:
-                right = grammar['Right'] # 拿到右边的列表 right
-                for symbol in right: # symbol 是列表中的单个字典
-                    if symbol['name'] == unend_symbol:
-                        if right.index(symbol) + 1 > len(right) - 1:
-                            if unend_symbol != grammar['Left']:
+        for unend_symbol in self.follow: # 对于每一个非终结符 N
+            for grammar in self.grammar: # 需要一条一条 grammar 去找它的出现位置
+                right = grammar['Right'] # 拿到 grammar 的右边集合
+                for symbol in right: # 遍历右边集合，其中 symbol 是集合里的元素
+                    if symbol['name'] == unend_symbol: # 若 symbol 的名字与 N 相同，就说明找到了
+                        if right.index(symbol) + 1 > len(right) - 1: # 若 symbol 已经是集合的最后一个元素了，则需要添加 follow 集
+                            if unend_symbol != grammar['Left']: # 若发现是自身的话就无需添加了
                                 finished = False
                                 tmp_dict = {}
                                 tmp_dict['type'] = 'FOLLOW'
@@ -131,86 +117,72 @@ class GrammarAnalyzer:
                                 tmp_dict['position'] = self.grammar.index(grammar)
                                 if tmp_dict not in self.follow[unend_symbol]:
                                     self.follow[unend_symbol].append(tmp_dict)
-                        else:
-                            if right[right.index(symbol) + 1]['TYPE'] == 'END':
-                                # 终结符
-                                tmp_dict = {}
-                                tmp_dict['name'] = right[right.index(symbol) + 1]['name']
-                                tmp_dict['position'] = self.grammar.index(grammar)
-                                if tmp_dict not in self.follow[unend_symbol]:
-                                    self.follow[unend_symbol].append(tmp_dict)
-                            else:
-                                # 非终结符
+                        else: # 若 symbol 后面还有其他元素，则添加其 first 集
+                            tmp_dict = {}
+                            if right[right.index(symbol) + 1]['TYPE'] == 'UNEND': # 若为非终结符
                                 finished = False
-                                tmp_dict = {}
                                 tmp_dict['type'] = 'FIRST'
-                                tmp_dict['name'] = right[right.index(symbol) + 1]['name']
-                                tmp_dict['position'] = self.grammar.index(grammar)
                                 tmp_dict['index'] = right.index(symbol) + 1
-                                if tmp_dict not in self.follow[unend_symbol]:
-                                    self.follow[unend_symbol].append(tmp_dict)
+                            tmp_dict['name'] = right[right.index(symbol) + 1]['name']
+                            tmp_dict['position'] = self.grammar.index(grammar)
+                            if tmp_dict not in self.follow[unend_symbol]:
+                                self.follow[unend_symbol].append(tmp_dict)
 
+        # 不断展开现有 follow 集里面需要替换的集合
         while finished == False:
-            finished = True
-            for unend_symbol in self.follow:
-                for element in self.follow[unend_symbol]:
-                    if element.get('type') == 'FIRST':
-                        # FIRST
-                        finished = False
-                        replace_symbol = element['name']
+            finished = True # 每一次循环都先把 finished 标志置为 True，若出现替换后还有需要进行替换的集合时则置 False
+            for unend_symbol in self.follow: # 遍历 follow 集里的每一个集合
+                for element in self.follow[unend_symbol]: # 遍历每一个集合里的每一个元素
+                    if element.get('type') == 'FIRST': # 若该元素需要展开，如：FIRST(X)
+                        replace_symbol = element['name'] # 拿到 X
                         position = element['position']
                         index = element['index']
-                        replace_list = self.first[replace_symbol]
+                        replace_list = self.first[replace_symbol] # 拿到当前 FIRST(X) 的集合
 
-                        # 先把现在列表里的那个字典删掉
-                        del self.follow[unend_symbol][self.follow[unend_symbol].index(element)]
+                        # 把当前集合中的 FIRST(X) 删掉
+                        del_index = self.follow[unend_symbol].index(element)
+                        del self.follow[unend_symbol][del_index]
 
-                        for replace_dict in replace_list:
-                            if replace_dict['name'] == 'epsilon':
-                                right = self.grammar[position]['Right']
-                                if index >= len(right) - 1:
-                                    # 添加 follow
+                        # 把当前 FIRST(X) 集合中的所有元素都加到当前集合中来
+                        for replace_dict in replace_list: # replace_dict 为当前 FIRST(X) 中的元素
+                            if replace_dict['name'] == 'epsilon': # 如果是空字符，还需要对 X 的下一个字符进行判断
+                                right = self.grammar[position]['Right'] # 拿到 X 所在产生式右边的列表
+                                if index >= len(right) - 1: # 若 X 已是最后一个符号，则添加 follow
+                                    finished = False
                                     tmp_dict = {}
                                     tmp_dict['type'] = 'FOLLOW'
                                     tmp_dict['name'] = self.grammar[position]['Left']
                                     tmp_dict['position'] = position
                                     if tmp_dict not in self.follow[unend_symbol]:
                                         self.follow[unend_symbol].append(tmp_dict)
-                                else:
-                                    # 添加 first
-                                    if right[index + 1]['TYPE'] == 'END':
-                                        # 终结符
-                                        tmp_dict = {}
-                                        tmp_dict['name'] = right[index + 1]['name']
-                                        tmp_dict['position'] = position
-                                        if tmp_dict not in self.follow[unend_symbol]:
-                                            self.follow[unend_symbol].append(tmp_dict)
-                                    else:
-                                        # 非终结符
-                                        tmp_dict = {}
+                                else: # 若 X 后面还有符号，则应加入下一个符号的 first 集
+                                    tmp_dict = {}
+                                    if right[index + 1]['TYPE'] == 'UNEND': # 非终结符
+                                        finished = False
                                         tmp_dict['type'] = 'FIRST'
-                                        tmp_dict['name'] = right[index + 1]['name']
-                                        tmp_dict['position'] = position
                                         tmp_dict['index'] = index + 1
-                                        if tmp_dict not in self.follow[unend_symbol]:
-                                            self.follow[unend_symbol].append(tmp_dict)
+                                    tmp_dict['name'] = right[index + 1]['name']
+                                    tmp_dict['position'] = position
+                                    if tmp_dict not in self.follow[unend_symbol]:
+                                        self.follow[unend_symbol].append(tmp_dict)
                             else:
                                 tmp_dict = replace_dict.copy()
                                 tmp_dict['position'] = position
                                 if tmp_dict not in self.follow[unend_symbol]:
                                     self.follow[unend_symbol].append(tmp_dict)
-                    elif element.get('type') == 'FOLLOW':
-                        # FOLLOW
-                        finished = False
-                        replace_symbol = element['name'] # B
-                        position = element['position'] # 4
-                        replace_list = self.follow[replace_symbol] # FOLLOW(T)
+                    elif element.get('type') == 'FOLLOW': # 若该元素需要展开，如：FOLLOW(X)
+                        replace_symbol = element['name'] # 拿到 X
+                        position = element['position']
+                        replace_list = self.follow[replace_symbol] # 拿到当前 FOLLOW(X) 的集合
 
-                        # 先把现在列表里的那个字典删掉
-                        del self.follow[unend_symbol][self.follow[unend_symbol].index(element)]
+                        # 把当前集合中的 FOLLOW(X) 删掉
+                        del_index = self.follow[unend_symbol].index(element)
+                        del self.follow[unend_symbol][del_index]
 
+                        # 把当前 FOLLOW(X) 集合中的所有元素都加到当前集合中来
                         for replace_dict in replace_list:
-                            if replace_dict['name'] != unend_symbol:
+                            if replace_dict['name'] != unend_symbol: # 首先，要加入的元素的名字不能和当前集合的名字相同
+                                # 其次，要加入的元素的名字不能和当前集合中已经存在的元素的名字相同
                                 already_exist = False
                                 for dict in self.follow[unend_symbol]:
                                     if dict['name'] == replace_dict['name']:
@@ -220,6 +192,8 @@ class GrammarAnalyzer:
                                     tmp_dict = replace_dict.copy()
                                     tmp_dict['position'] = position
                                     if tmp_dict not in self.follow[unend_symbol]:
+                                        if tmp_dict.get('type') == 'FOLLOW' or tmp_dict.get('type') == 'FIRST':
+                                            finished = False
                                         self.follow[unend_symbol].append(tmp_dict)
                     else:
                         continue
@@ -227,6 +201,7 @@ class GrammarAnalyzer:
         print("目前得到的 follow 集：")
         for unend_symbol in self.follow:
             print(unend_symbol, '——', self.follow[unend_symbol])
+        print()
 
         return 0
     
