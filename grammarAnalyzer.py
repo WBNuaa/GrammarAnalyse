@@ -21,51 +21,54 @@ class GrammarAnalyzer:
             if left not in self.first: # 把尚未在 first 集里出现的非终结符都添加进去
                 self.first[left] = []
 
-            right = grammar['Right'][0] # 看产生式右边的第一个符号
-            if right['TYPE'] == 'END': # 如果是终结符，直接加入 first 集即可
-                tmp_dict = {}
-                tmp_dict['name'] = right['name']
-                tmp_dict['position'] = self.grammar.index(grammar)
-                self.first[left].append(tmp_dict)
-            elif right['TYPE'] == 'UNEND': # 如果是非终结符，则需要加入该非终结符的 first 集
+            # 看产生式右边的第一个符号
+            # 如果是终结符，直接加入 first 集即可
+            # 如果是非终结符，则需要加入该非终结符的 first 集
+            right = grammar['Right'][0]
+            tmp_dict = {}
+            tmp_dict['name'] = right['name']
+            tmp_dict['position'] = self.grammar.index(grammar)
+            if right['TYPE'] == 'UNEND': 
                 finished = False
-                tmp_dict = {}
-                tmp_dict['type'] = 'UNEND'
-                tmp_dict['name'] = right['name']
-                tmp_dict['position'] = self.grammar.index(grammar)
+                tmp_dict['type'] = 'FIRST'
                 tmp_dict['index'] = 0
-                self.first[left].append(tmp_dict)
+            self.first[left].append(tmp_dict)
         
+        # 不断展开现有 first 集里面需要替换的集合
         while finished == False:
-            finished = True
-            for unend_symbol in self.first:
-                for element in self.first[unend_symbol]: # 这里拿到的是一个字典                    
-                    if element.get('type') == 'UNEND':
+            finished = True # 每一次循环都先把 finished 标志置为 True，若出现替换后还有需要进行替换的集合时则置 False
+            for unend_symbol in self.first: # 遍历 first 集里的每一个集合
+                for element in self.first[unend_symbol]: # 遍历每一个集合里的每一个元素
+                    if element.get('type') == 'FIRST': # 若该元素需要展开，如：FIRST(X)
+                        ##################
+                        # 感觉这里有问题
+                        ##################
                         finished = False
-                        replace_symbol = element['name']
+
+                        replace_symbol = element['name'] # 拿到 X
                         position = element['position']
                         index = element['index']
-                        replace_list = self.first[replace_symbol]
+                        replace_list = self.first[replace_symbol] # 拿到当前 FIRST(X) 的集合
                         
-                        # 先把现在列表里的那个字典删掉
-                        del self.first[unend_symbol][self.first[unend_symbol].index(element)]
+                        # 把当前集合中的 FIRST(X) 删掉
+                        del_index = self.first[unend_symbol].index(element)
+                        del self.first[unend_symbol][del_index]
                         
-                        # 然后把要替换列表的所有字典都加到现在的列表里
-                        for replace_dict in replace_list:
-                            if replace_dict.get('type') == 'UNEND':
-                                # 如果还是非终结符
+                        # 把当前 FIRST(X) 集合中的所有元素都加到当前集合中来
+                        for replace_dict in replace_list: # replace_dict 为当前 FIRST(X) 中的元素
+                            if replace_dict.get('type') == 'FIRST': # 若 replace_dict 仍需要展开，则原样复制过去即可
+                                #########################
+                                # 感觉要在这里加 finished
+                                #########################
                                 tmp_dict = replace_dict.copy()
-                                tmp_dict['position'] = position
-                                tmp_dict['index'] = index
+                                tmp_dict['position'] = position # position 保留
+                                tmp_dict['index'] = index # index 保留
                                 self.first[unend_symbol].append(tmp_dict)
-                            else:
-                                # 终结符
-                                if replace_dict['name'] == 'epsilon':
-                                    # 如果是空字符，需要到 grammar 里面去找
+                            else: # 终结符
+                                if replace_dict['name'] == 'epsilon': # 如果是空字符，还需要对 X 的下一个字符进行判断
                                     for grammar in self.grammar:
                                         if grammar['Left'] == unend_symbol:
                                             right_list = grammar['Right']
-                                            # right = grammar['Right'][index + 1]
                                             break
                                     if index + 1 > len(right_list) - 1:
                                         # 保留空字符
@@ -84,12 +87,12 @@ class GrammarAnalyzer:
                                         elif right['TYPE'] == 'UNEND': # 如果是非终结符
                                             # finished = False
                                             tmp_dict = {}
-                                            tmp_dict['type'] = 'UNEND'
+                                            tmp_dict['type'] = 'FIRST'
                                             tmp_dict['name'] = right['name']
                                             tmp_dict['position'] = position
                                             tmp_dict['index'] = index + 1
                                             self.first[unend_symbol].append(tmp_dict)
-                                else:
+                                else: # 普通终结符，原样复制过去即可
                                     tmp_dict = replace_dict.copy()
                                     tmp_dict['position'] = position
                                     self.first[unend_symbol].append(tmp_dict)
