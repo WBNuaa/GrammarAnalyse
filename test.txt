@@ -1,9 +1,15 @@
-E G T S F
-+ - / ( ) i epsilon
-E -> T G
-G -> + T G | - T G
-T -> F S
-T -> epsilon
-S -> / F S
-F -> ( E )
-F -> i
+E T A F B P C
++ epsilon * ( ) a b ^
+E -> T A
+A -> + E
+A -> epsilon
+T -> F B
+B -> T
+B -> epsilon
+F -> P C
+C -> * C
+C -> epsilon
+P -> ( E )
+P -> a
+P -> b
+P -> ^

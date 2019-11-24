@@ -1,0 +1,9 @@
+E G T S F
++ - / ( ) i epsilon
+E -> T G
+G -> + T G | - T G
+T -> F S
+T -> epsilon
+S -> / F S
+F -> ( E )
+F -> i
