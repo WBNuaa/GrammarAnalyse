@@ -207,6 +207,83 @@ class GrammarAnalyzer:
     
     #文法分析表函数,构造表后直接打印出来,
     def AnalyzeTable(self):
+        #初始化分析表
+        print('分析表：')
+        for i in range(len(self.Vg) + 1):
+            self.analyse.append([])
+            for j in range(len(self.Vt) + 1):
+                self.analyse[i].append('error')
+        self.analyse[0][0] = None
+        self.analyse[0][len(self.Vt)] = '#'
+        for i in range(len(self.Vg) + 1):
+            if i > 0:
+                #i行0列
+                self.analyse[i][0] = self.Vg[i - 1]
+        positionvt = 0
+        for i in range(len(self.Vt)):
+            #print(self.Vt[positionvt])
+            if self.analyse[0][i] == None:
+                continue
+            if self.Vt[positionvt] != 'epsilon':
+                self.analyse[0][i] = self.Vt[positionvt]
+                positionvt = positionvt + 1
+            else:
+                self.analyse[0][i] = self.Vt[positionvt + 1]
+                positionvt = positionvt + 2
+        #for i in range(len(self.Vg) + 1):
+        #    print(self.analyse[i])
+        for i in range(1, len(self.analyse)):
+            #print(self.analyse[i][0], ':', self.first[self.analyse[i][0]])
+            for j in range(1, len(self.analyse[0])):
+                #print(self.analyse[0][j])
+                position = -1
+                is_epsilon = -1
+                #在first集中则position为产生式的位置
+                for k in self.first[self.analyse[i][0]]:
+                    if 'epsilon' == k['name']:
+                        is_epsilon = k['position']
+                    if self.analyse[0][j] == k['name']:
+                        position = k['position']
+                        break
+                #如果不在first集中，查看first集中是否有空，有则查看
+                if position == -1:
+                    #epsilon在first集中，去follow集中寻找
+                    if is_epsilon != -1:
+                        for k in self.follow[self.analyse[i][0]]:
+                            #print(k['name'], self.analyse[0][j])
+                            if self.analyse[0][j] == k['name']:
+                                self.analyse[i][j] = self.grammar[is_epsilon]
+                                #print(self.grammar[is_epsilon])
+                                break
+                else:
+                    #print(self.grammar[position])
+                    self.analyse[i][j] = self.grammar[position]
+        #字符串输出
+        for i in range(len(self.Vg) + 1):
+            if i == 0:
+                for j in range(len(self.Vt) + 1):
+                    if j == 0:
+                        print(self.analyse[i][j], end='    ')
+                        continue
+                    #'         '
+                    #'                  '
+                    print(self.analyse[i][j], end='         ')
+                print()
+                continue
+            for j in range(len(self.Vt) + 1):
+                if j == 0:
+                    print(self.analyse[i][j], end='      ')
+                    continue
+                else:
+                    if self.analyse[i][j] == 'error':
+                        print(self.analyse[i][j], end=' ')
+                    else:
+                        print(self.analyse[i][j]['Left'], '->', end=' ')
+                        for k in self.analyse[i][j]['Right']:
+                            print(k['name'], end=' ')
+                    if j != len(self.Vt):
+                        print(',', end=' ')
+            print()
         return 0
 
     #符号栈函数,文法的存储数组是self.grammar,构造表后直接打印出来
@@ -228,7 +305,7 @@ class GrammarAnalyzer:
         self.grammar = [] #存放文法的数组
         self.first = {} #存放first集， eg:{"first":"E", "content":['a','(']}
         self.follow = {} #存放follow集 eg:{"follow":"E", "content":['a','(']}
-        self.analyse = [[]] 
+        self.analyse = [] 
         '''
         self.analyse = [
             [null, 'a', 'b', 'c', ..., '#'],
@@ -261,8 +338,8 @@ class GrammarAnalyzer:
         self.AnalyzeTable()
 
         #求符号栈
-        symbol = input("输入一个字符串：")
-        self.SymbolStack(symbol)
+        #symbol = input("输入一个字符串：")
+        #self.SymbolStack(symbol)
 
 
 
@@ -270,6 +347,6 @@ class GrammarAnalyzer:
 
 
 if __name__ == '__main__':
-    inputfile = "test.txt"
+    inputfile = "test2.txt"
     grammar = GrammarAnalyzer(inputfile)
     grammar.run()
