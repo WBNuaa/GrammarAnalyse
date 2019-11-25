@@ -1,28 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-E -> T G
-//[{"name":"T", "TYPE":"UNEND"},{"name":"G", "TYPE":"END"}] 
-G -> + T G | - T G
-//G -> + T G
-//G -> id
-//G -> - T G
-T ->F S
-    S   -> * F S
-S -> / F S
-F -> ( E )
-F -> i
-=======
-E G T S F
-+ - / ( ) i epsilon
-E -> T G
-G -> + T G | - T G
-T -> F S
-T -> epsilon
-S -> / F S
-F -> ( E )
-F -> i
->>>>>>> 66c14dad20ee9bf119c7bd9ee397dbb1aac86bb7
-=======
 E T A F B P C
 + epsilon * ( ) a b ^
 E -> T A
@@ -38,4 +13,4 @@ P -> ( E )
 P -> a
 P -> b
 P -> ^
->>>>>>> 6b3899b824484a7fcc163c5d958971958f41e7d2
+
