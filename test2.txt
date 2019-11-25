@@ -1,0 +1,7 @@
+E T E' T' F
++ epsilon * ( ) i
+E -> T E'
+E' -> + T E' | epsilon
+T -> F T'
+T' -> * F T' | epsilon
+F -> ( E ) | i
