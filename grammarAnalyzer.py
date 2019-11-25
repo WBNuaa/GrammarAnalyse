@@ -226,15 +226,8 @@ class GrammarAnalyzer:
         self.Vg = [] #非终结符
         self.Vt = [] #终结符
         self.grammar = [] #存放文法的数组
-<<<<<<< HEAD
-        self.first = [] 
-        '''存放first集， eg:{"first":"E", "content":[
-            ['a','('],]}'''
-        self.follow = [] #存放follow集 eg:{"follow":"E", "content":['a','(']}
-=======
         self.first = {} #存放first集， eg:{"first":"E", "content":['a','(']}
         self.follow = {} #存放follow集 eg:{"follow":"E", "content":['a','(']}
->>>>>>> 6b3899b824484a7fcc163c5d958971958f41e7d2
         self.analyse = [[]] 
         '''
         self.analyse = [
