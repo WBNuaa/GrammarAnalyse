@@ -313,6 +313,7 @@ class GrammarAnalyzer:
                         res.append("".join(r))
             tb.add_row(res)
         print(tb)
+        print()
         return 0
 
     # 符号栈函数,文法的存储数组是self.grammar,构造表后直接打印出来
@@ -321,6 +322,10 @@ class GrammarAnalyzer:
         # 初始化
         tb = pt.PrettyTable()
         tb.field_names = ["步骤", "符号栈", "输入串", "所用产生式"]
+        tb.align["符号栈"] = "l" 
+        tb.align["所用产生式"] = "l" 
+        tb.align["输入串"] = "r" 
+
         i = 0
         symbols = ["#", self.analyse[1][0]] # 符号栈
         inputs = ["#"] # 输入串
@@ -328,6 +333,7 @@ class GrammarAnalyzer:
         for s in strings:
             inputs.append(s.strip())
         
+        # 加入第0行
         res = []
         res.append(i)
         res.append(" ".join(symbols))
@@ -335,9 +341,6 @@ class GrammarAnalyzer:
         res.append("")
         tb.add_row(res)
         i += 1
-
-        # print(self.analyse)
-
 
         while not symbols[-1] == inputs[-1] == "#":
             symbol = symbols[-1]
@@ -359,9 +362,6 @@ class GrammarAnalyzer:
                 for name in reversed(strategy["Right"]):
                     if name["name"] != "epsilon":
                         symbols.append(name["name"])
-                
-                
-
 
             res = []
             res.append(i)
@@ -371,6 +371,7 @@ class GrammarAnalyzer:
 
             tb.add_row(res)
             i += 1
+        print("预测分析过程：")
         print(tb)
         return 0
 
