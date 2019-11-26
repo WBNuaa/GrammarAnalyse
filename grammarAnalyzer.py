@@ -285,10 +285,9 @@ class GrammarAnalyzer:
                 else:
                     # print(self.grammar[position])
                     self.analyse[i][j] = self.grammar[position]
+
         # 字符串输出
         tb = pt.PrettyTable()
-        
-
         for i in range(len(self.Vg) + 1):
             res = []
             if i == 0:
@@ -300,7 +299,7 @@ class GrammarAnalyzer:
                     res.append(self.analyse[i][j])
                     continue
                 else:
-                    if self.analyse[i][j] == "error":
+                    if self.analyse[i][j] == "error" or self.analyse[i][j] == "synch":
                         res.append(self.analyse[i][j])
 
                     else:
@@ -312,7 +311,44 @@ class GrammarAnalyzer:
                             r.append(" ")
                         res.append("".join(r))
             tb.add_row(res)
-        print(tb)
+        print(tb, flush=True)
+        print()
+        
+        # 出错处理
+        print("出错处理后：")
+        for unend_symbol in self.follow:
+            for k in self.follow[unend_symbol]:
+                if self.analyse[self.Vg.index(unend_symbol) + 1][self.analyse[0].index(k["name"])] == "error":
+                    self.analyse[self.Vg.index(unend_symbol) + 1][self.analyse[0].index(k["name"])]  = "synch"
+        print()
+
+
+        # 字符串输出
+        tb = pt.PrettyTable()
+        for i in range(len(self.Vg) + 1):
+            res = []
+            if i == 0:
+                tb.field_names = self.analyse[i]
+                continue
+            for j in range(len(self.Vt) + 1):
+                
+                if j == 0:
+                    res.append(self.analyse[i][j])
+                    continue
+                else:
+                    if self.analyse[i][j] == "error" or self.analyse[i][j] == "synch":
+                        res.append(self.analyse[i][j])
+
+                    else:
+                        r = []
+                        r.append(self.analyse[i][j]["Left"])
+                        r.append(" -> ")
+                        for k in self.analyse[i][j]["Right"]:
+                            r.append(k["name"])
+                            r.append(" ")
+                        res.append("".join(r))
+            tb.add_row(res)
+        print(tb, flush=True)
         print()
         return 0
 
@@ -330,7 +366,7 @@ class GrammarAnalyzer:
         symbols = ["#", self.analyse[1][0]] # 符号栈
         inputs = ["#"] # 输入串
         strings = string.split() # i + i * i  => # i + i * i
-        for s in strings:
+        for s in reversed(strings):
             inputs.append(s.strip())
         
         # 加入第0行
@@ -342,37 +378,53 @@ class GrammarAnalyzer:
         tb.add_row(res)
         i += 1
 
-        while not symbols[-1] == inputs[-1] == "#":
+        while not symbols[-1] == "#":
             symbol = symbols[-1]
             s = inputs[-1]
             if s == symbol != "#":
-                strategy = "pop"
-            else:
+                strategy = "popboth"
+            elif symbol in self.Vg:
                 strategy = self.analyse[self.Vg.index(symbol) + 1][self.analyse[0].index(s)]
+            elif strategy == "error" or strategy == "synch":
+                pass
+            else:
+                strategy = "popgt"
+            
             if strategy == "error":
-                # 出错 终止
-                print("\033[31mfatal error\033[0m")
-                exit(1)
-            elif strategy == "pop":
+                # 出错 跳过
+                inputs.pop()
+                strategy = "出错，跳过"
+            elif strategy == "synch":
+                symbols.pop()
+                strategy = "同步符号，弹出栈"
+            elif strategy == "popgt":
+                symbols.pop()
+                strategy = "栈顶与输入符号不匹配，弹出栈"
+            elif strategy == "popboth":
                 # 都弹出来
                 symbols.pop()
                 inputs.pop()
+                strategy = ""
             else:
                 symbols.pop()
                 for name in reversed(strategy["Right"]):
                     if name["name"] != "epsilon":
                         symbols.append(name["name"])
-
+                strategy = strategy["Left"] + " -> " + " ".join([name["name"] for name in strategy["Right"]])
             res = []
             res.append(i)
             res.append(" ".join(symbols))
             res.append(" ".join(reversed(inputs)))
-            res.append(strategy["Left"] + " -> " + " ".join([name["name"] for name in strategy["Right"]]) if strategy != "pop" else "")
+            res.append(strategy)
 
             tb.add_row(res)
             i += 1
+        
         print("预测分析过程：")
         print(tb)
+        # 如果到这里输入栈还有东西，则失败
+        if inputs[-1] != "#":
+            print("分析失败")
         return 0
 
     def __init__(self, inputfile):
@@ -425,7 +477,9 @@ class GrammarAnalyzer:
 
         # 求符号栈
         # symbol = input("输入一个字符串，无需以#结尾：")
-        symbol = "i + i * i"
+        # symbol = " + i * + i"
+        symbol = " ) i * + i"
+        # symbol = " i * + i"
         self.SymbolStack(symbol)
 
 
