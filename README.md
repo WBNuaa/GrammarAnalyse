@@ -131,6 +131,8 @@ T	T→FT'			    T→FT'
 T'		  T'→ε	 T'→*FT'	  T'→ε	T'→ε
 F	F→i			        F→(E)		
 
+（已修复）
+
 生成first和follow时有BUG， 首先如果将E', T'替换成A, B，在first和follow的一条中会出现重复部分， 其次如果是E', T'
 会在68行报错， 错误提示为列表越界
 ```
