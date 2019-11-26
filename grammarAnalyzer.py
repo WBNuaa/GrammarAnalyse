@@ -9,9 +9,6 @@ except :
     os.system('pip install prettytable')
     import prettytable as pt
 
-
-
-
 class GrammarAnalyzer:
 
     # first 集 follow 集函数，文法的存储数组是 self.grammar ,得到的结果打印出来并存到数组 self.first, self.follow
@@ -309,9 +306,10 @@ class GrammarAnalyzer:
                     else:
                         r = []
                         r.append(self.analyse[i][j]["Left"])
-                        r.append("->")
+                        r.append(" -> ")
                         for k in self.analyse[i][j]["Right"]:
                             r.append(k["name"])
+                            r.append(" ")
                         res.append("".join(r))
             tb.add_row(res)
         print(tb)
@@ -319,8 +317,61 @@ class GrammarAnalyzer:
 
     # 符号栈函数,文法的存储数组是self.grammar,构造表后直接打印出来
     # 比如 self.grammar = [{"Left": "E", "Right": [{"name": "T", "TYPE": "UNEND"}, {"name": "G", "TYPE": "UNEND"}]}]
-    def SymbolStack(self, symbol):
+    def SymbolStack(self, string):
+        # 初始化
+        tb = pt.PrettyTable()
+        tb.field_names = ["步骤", "符号栈", "输入串", "所用产生式"]
+        i = 0
+        symbols = ["#", self.analyse[1][0]] # 符号栈
+        inputs = ["#"] # 输入串
+        strings = string.split() # i + i * i  => # i + i * i
+        for s in strings:
+            inputs.append(s.strip())
+        
+        res = []
+        res.append(i)
+        res.append(" ".join(symbols))
+        res.append(" ".join(reversed(inputs)))
+        res.append("")
+        tb.add_row(res)
+        i += 1
 
+        # print(self.analyse)
+
+
+        while not symbols[-1] == inputs[-1] == "#":
+            symbol = symbols[-1]
+            s = inputs[-1]
+            if s == symbol != "#":
+                strategy = "pop"
+            else:
+                strategy = self.analyse[self.Vg.index(symbol) + 1][self.analyse[0].index(s)]
+            if strategy == "error":
+                # 出错 终止
+                print("\033[31mfatal error\033[0m")
+                exit(1)
+            elif strategy == "pop":
+                # 都弹出来
+                symbols.pop()
+                inputs.pop()
+            else:
+                symbols.pop()
+                for name in reversed(strategy["Right"]):
+                    if name["name"] != "epsilon":
+                        symbols.append(name["name"])
+                
+                
+
+
+            res = []
+            res.append(i)
+            res.append(" ".join(symbols))
+            res.append(" ".join(reversed(inputs)))
+            res.append(strategy["Left"] + " -> " + " ".join([name["name"] for name in strategy["Right"]]) if strategy != "pop" else "")
+
+            tb.add_row(res)
+            i += 1
+        print(tb)
         return 0
 
     def __init__(self, inputfile):
@@ -372,8 +423,9 @@ class GrammarAnalyzer:
         self.AnalyzeTable()
 
         # 求符号栈
-        # symbol = input("输入一个字符串：")
-        # self.SymbolStack(symbol)
+        # symbol = input("输入一个字符串，无需以#结尾：")
+        symbol = "i + i * i"
+        self.SymbolStack(symbol)
 
 
 if __name__ == "__main__":
