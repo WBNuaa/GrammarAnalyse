@@ -385,8 +385,6 @@ class GrammarAnalyzer:
                 strategy = "popboth"
             elif symbol in self.Vg:
                 strategy = self.analyse[self.Vg.index(symbol) + 1][self.analyse[0].index(s)]
-            elif strategy == "error" or strategy == "synch":
-                pass
             else:
                 strategy = "popgt"
             
@@ -478,8 +476,9 @@ class GrammarAnalyzer:
         # 求符号栈
         # symbol = input("输入一个字符串，无需以#结尾：")
         # symbol = " + i * + i"
-        symbol = " ) i * + i"
+        # symbol = " ) i * + i"
         # symbol = " i * + i"
+        symbol = " i + i * i"
         self.SymbolStack(symbol)
 
 
