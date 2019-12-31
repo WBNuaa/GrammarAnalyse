@@ -348,8 +348,12 @@ class GrammarAnalyzer:
                             r.append(" ")
                         res.append("".join(r))
             tb.add_row(res)
+<<<<<<< HEAD
         print(tb, flush=True)
         print()
+=======
+        print(tb)
+>>>>>>> parent of b376c83... 调整细节
         return 0
 
     # 符号栈函数,文法的存储数组是self.grammar,构造表后直接打印出来
@@ -358,10 +362,6 @@ class GrammarAnalyzer:
         # 初始化
         tb = pt.PrettyTable()
         tb.field_names = ["步骤", "符号栈", "输入串", "所用产生式"]
-        tb.align["符号栈"] = "l" 
-        tb.align["所用产生式"] = "l" 
-        tb.align["输入串"] = "r" 
-
         i = 0
         symbols = ["#", self.analyse[1][0]] # 符号栈
         inputs = ["#"] # 输入串
@@ -369,7 +369,6 @@ class GrammarAnalyzer:
         for s in reversed(strings):
             inputs.append(s.strip())
         
-        # 加入第0行
         res = []
         res.append(i)
         res.append(" ".join(symbols))
@@ -378,7 +377,14 @@ class GrammarAnalyzer:
         tb.add_row(res)
         i += 1
 
+<<<<<<< HEAD
         while not symbols[-1] == "#":
+=======
+        # print(self.analyse)
+
+
+        while not symbols[-1] == inputs[-1] == "#":
+>>>>>>> parent of b376c83... 调整细节
             symbol = symbols[-1]
             s = inputs[-1]
             if s == symbol != "#":
@@ -408,7 +414,14 @@ class GrammarAnalyzer:
                 for name in reversed(strategy["Right"]):
                     if name["name"] != "epsilon":
                         symbols.append(name["name"])
+<<<<<<< HEAD
                 strategy = strategy["Left"] + " -> " + " ".join([name["name"] for name in strategy["Right"]])
+=======
+                
+                
+
+
+>>>>>>> parent of b376c83... 调整细节
             res = []
             res.append(i)
             res.append(" ".join(symbols))
@@ -417,8 +430,11 @@ class GrammarAnalyzer:
 
             tb.add_row(res)
             i += 1
+<<<<<<< HEAD
         
         print("预测分析过程：")
+=======
+>>>>>>> parent of b376c83... 调整细节
         print(tb)
         # 如果到这里输入栈还有东西，则失败
         if inputs[-1] != "#":
