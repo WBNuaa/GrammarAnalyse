@@ -349,8 +349,12 @@ class GrammarAnalyzer:
                         res.append("".join(r))
             tb.add_row(res)
 <<<<<<< HEAD
+<<<<<<< HEAD
         print(tb, flush=True)
         print()
+=======
+        print(tb)
+>>>>>>> parent of b376c83... 调整细节
 =======
         print(tb)
 >>>>>>> parent of b376c83... 调整细节
@@ -378,8 +382,11 @@ class GrammarAnalyzer:
         i += 1
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         while not symbols[-1] == "#":
 =======
+=======
+>>>>>>> parent of b376c83... 调整细节
         # print(self.analyse)
 
 
@@ -415,10 +422,16 @@ class GrammarAnalyzer:
                     if name["name"] != "epsilon":
                         symbols.append(name["name"])
 <<<<<<< HEAD
+<<<<<<< HEAD
                 strategy = strategy["Left"] + " -> " + " ".join([name["name"] for name in strategy["Right"]])
 =======
                 
                 
+=======
+                
+                
+
+>>>>>>> parent of b376c83... 调整细节
 
 
 >>>>>>> parent of b376c83... 调整细节
@@ -431,8 +444,11 @@ class GrammarAnalyzer:
             tb.add_row(res)
             i += 1
 <<<<<<< HEAD
+<<<<<<< HEAD
         
         print("预测分析过程：")
+=======
+>>>>>>> parent of b376c83... 调整细节
 =======
 >>>>>>> parent of b376c83... 调整细节
         print(tb)
